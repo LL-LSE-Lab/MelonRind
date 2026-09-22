@@ -1,0 +1,11 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "MelonRind HUD textures",
+    "description": "Client HUD overlays for MelonRind",
+    "uuid": "8f82ec09-9730-4d29-882f-14c873e60e65",
+    "version": [0, 1, 0],
+    "min_engine_version": [1, 26, 10]
+  },
+  "modules": [{"type": "resources", "uuid": "a90efa02-8a77-4bcd-8314-d0501f2c11a3", "version": [0, 1, 0]}]
+}
