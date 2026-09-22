@@ -1,0 +1,46 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup xmake
+        uses: xmake-io/github-action-setup-xmake@v1
+        with:
+          xmake-version: latest
+
+      - name: Cache xmake dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/AppData/Local/.xmake
+          key: xmake-${{ runner.os }}-${{ hashFiles('xmake.lua') }}
+          restore-keys: |
+            xmake-${{ runner.os }}-
+
+      - name: Run unit tests
+        shell: pwsh
+        run: |
+          xmake f -a x64 -m release -p windows --model_tests_only=y -y
+          xmake build model-tests
+          xmake run model-tests
+
+      - name: Configure and build client mod
+        shell: pwsh
+        run: |
+          xmake repo -u
+          xmake f -a x64 -m release -p windows --target_type=client -y
+          xmake build MelonRind

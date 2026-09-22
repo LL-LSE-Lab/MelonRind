@@ -1,26 +1,59 @@
 param(
     [switch]$Diagnostics,
-    [string]$ArchiveName = 'MelonRind-0.1.0-dev-client-windows-x64.zip'
+    [string]$Version = '0.1.0',
+    [string]$ArchiveName = ''
 )
 $ErrorActionPreference = 'Stop'
 $workspace = Split-Path -Parent $PSScriptRoot
 $source = Join-Path $workspace 'bin\MelonRind'
 if (-not (Test-Path -LiteralPath (Join-Path $source 'MelonRind.dll'))) { throw 'Build MelonRind first.' }
+
+if (-not $ArchiveName) {
+    $ArchiveName = "MelonRind-$Version-client-windows-x64.zip"
+}
+
+# Update manifest.json in source
 $manifest = Get-Content -LiteralPath (Join-Path $workspace 'manifest.json') -Raw
-$manifest = $manifest.Replace('${modName}', 'MelonRind').Replace('${modFile}', 'MelonRind.dll').Replace('${modVersion}', '0.1.0-dev')
+$manifest = $manifest.Replace('${modName}', 'MelonRind').Replace('${modFile}', 'MelonRind.dll').Replace('${modVersion}', $Version)
 Set-Content -LiteralPath (Join-Path $source 'manifest.json') -Value $manifest -Encoding utf8
+
 Copy-Item -LiteralPath (Join-Path $workspace 'resource_packs') -Destination $source -Recurse -Force
 if (Test-Path -LiteralPath (Join-Path $workspace 'docs\testing.zh-CN.md')) {
     Copy-Item -LiteralPath (Join-Path $workspace 'docs\testing.zh-CN.md') -Destination (Join-Path $source 'TESTING.md') -Force
 }
+
 $configDir = Join-Path $source 'config'
 New-Item -ItemType Directory -Path $configDir -Force | Out-Null
-# Always write staging defaults: a normal package must not inherit diagnostic
-# markers from a preceding -Diagnostics invocation. Installed settings are separate.
 $config = [ordered]@{ diagnostics=[bool]$Diagnostics; diagnosticMarkers=[bool]$Diagnostics; positionsAreLocal=$true; renderPass=0; saturationCap='hungerAfterEating' }
 $config | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $configDir 'config.json') -Encoding utf8
+
+# Stage package content: MelonRind directory + root tooth.json
 $dist = Join-Path $workspace 'dist'
 New-Item -ItemType Directory -Path $dist -Force | Out-Null
+$staging = Join-Path $dist 'staging'
+if (Test-Path -LiteralPath $staging) {
+    Remove-Item -LiteralPath $staging -Recurse -Force
+}
+New-Item -ItemType Directory -Path $staging -Force | Out-Null
+
+# Copy MelonRind directory
+Copy-Item -LiteralPath $source -Destination (Join-Path $staging 'MelonRind') -Recurse -Force
+
+# Copy tooth.json to root of archive if present
+$toothJsonPath = Join-Path $workspace 'tooth.json'
+if (Test-Path -LiteralPath $toothJsonPath) {
+    Copy-Item -LiteralPath $toothJsonPath -Destination (Join-Path $staging 'tooth.json') -Force
+}
+
 $archive = Join-Path $dist $ArchiveName
-Compress-Archive -Path $source -DestinationPath $archive -Force
+Compress-Archive -Path (Join-Path $staging '*') -DestinationPath $archive -Force
+Remove-Item -LiteralPath $staging -Recurse -Force
+
 Get-FileHash -LiteralPath $archive -Algorithm SHA256
+
+# Also create compatible aliases for lip and release download
+$genericClientArchive = Join-Path $dist 'MelonRind-client-windows-x64.zip'
+Copy-Item -LiteralPath $archive -Destination $genericClientArchive -Force
+
+$genericVersionArchive = Join-Path $dist "MelonRind-$Version-windows-x64.zip"
+Copy-Item -LiteralPath $archive -Destination $genericVersionArchive -Force

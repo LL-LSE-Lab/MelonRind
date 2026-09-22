@@ -1,0 +1,74 @@
+name: Release
+
+on:
+  release:
+    types:
+      - published
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Release tag (e.g. v0.1.0)'
+        required: false
+        default: ''
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup xmake
+        uses: xmake-io/github-action-setup-xmake@v1
+        with:
+          xmake-version: latest
+
+      - name: Cache xmake dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/AppData/Local/.xmake
+          key: xmake-${{ runner.os }}-${{ hashFiles('xmake.lua') }}
+          restore-keys: |
+            xmake-${{ runner.os }}-
+
+      - name: Configure and build
+        shell: pwsh
+        run: |
+          xmake repo -u
+          xmake f -a x64 -m release -p windows --target_type=client -y
+          xmake build MelonRind
+
+      - name: Run unit tests
+        shell: pwsh
+        run: |
+          xmake build model-tests
+          xmake run model-tests
+
+      - name: Package release assets
+        id: package
+        shell: pwsh
+        run: |
+          $tag = "${{ github.event.release.tag_name }}"
+          if (-not $tag -and "${{ inputs.tag_name }}") {
+            $tag = "${{ inputs.tag_name }}"
+          }
+          if (-not $tag) {
+            $tag = (git describe --tags --abbrev=0 2>$null)
+          }
+          $version = if ($tag -match '^v?(.+)$') { $Matches[1] } else { '0.1.0' }
+          Write-Host "Packaging for version: $version"
+          ./tools/package.ps1 -Version $version
+
+      - name: Upload assets to release
+        uses: softprops/action-gh-release@v2
+        if: github.event_name == 'release' || inputs.tag_name != ''
+        with:
+          tag_name: ${{ github.event.release.tag_name || inputs.tag_name }}
+          files: |
+            dist/MelonRind-*-client-windows-x64.zip
+            dist/MelonRind-client-windows-x64.zip
