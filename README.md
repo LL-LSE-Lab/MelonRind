@@ -43,10 +43,6 @@
 lip install github.com/LL-LSE-Lab/MelonRind
 ```
 
-```bash
-lip install MelonRind
-```
-
 ### 方式 2：手动下载发行版
 
 1. 前往 [Releases](https://github.com/LL-LSE-Lab/MelonRind/releases) 页面下载预编译的发布包（ZIP）。
