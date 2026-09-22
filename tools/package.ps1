@@ -1,4 +1,7 @@
-param([switch]$Diagnostics)
+param(
+    [switch]$Diagnostics,
+    [string]$ArchiveName = 'MelonRind-0.1.0-dev-client-windows-x64.zip'
+)
 $ErrorActionPreference = 'Stop'
 $workspace = Split-Path -Parent $PSScriptRoot
 $source = Join-Path $workspace 'bin\MelonRind'
@@ -18,6 +21,6 @@ $config = [ordered]@{ diagnostics=[bool]$Diagnostics; diagnosticMarkers=[bool]$D
 $config | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $configDir 'config.json') -Encoding utf8
 $dist = Join-Path $workspace 'dist'
 New-Item -ItemType Directory -Path $dist -Force | Out-Null
-$archive = Join-Path $dist 'MelonRind-0.1.0-dev-client.zip'
+$archive = Join-Path $dist $ArchiveName
 Compress-Archive -Path $source -DestinationPath $archive -Force
 Get-FileHash -LiteralPath $archive -Algorithm SHA256
