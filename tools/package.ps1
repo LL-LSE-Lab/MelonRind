@@ -51,9 +51,3 @@ Remove-Item -LiteralPath $staging -Recurse -Force
 
 Get-FileHash -LiteralPath $archive -Algorithm SHA256
 
-# Also create compatible aliases for lip and release download
-$genericClientArchive = Join-Path $dist 'MelonRind-client-windows-x64.zip'
-Copy-Item -LiteralPath $archive -Destination $genericClientArchive -Force
-
-$genericVersionArchive = Join-Path $dist "MelonRind-$Version-windows-x64.zip"
-Copy-Item -LiteralPath $archive -Destination $genericVersionArchive -Force
