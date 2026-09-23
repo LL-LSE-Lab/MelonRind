@@ -24,7 +24,7 @@ if not has_config("model_tests_only") then
         set_toolchains("msvc")
         set_symbols("debug")
         add_rules("@levibuildscript/linkrule")
-        add_rules("@levibuildscript/modpacker", {modVersion = "0.1.0"})
+        add_rules("@levibuildscript/modpacker", {modVersion = "0.1.1"})
         add_packages("levilamina")
         add_syslinks("Version")
         add_includedirs("src")

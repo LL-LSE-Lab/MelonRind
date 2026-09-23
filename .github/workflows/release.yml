@@ -72,3 +72,4 @@ jobs:
           files: |
             dist/MelonRind-*-client-windows-x64.zip
             dist/MelonRind-client-windows-x64.zip
+            dist/MelonRind-*-windows-x64.zip

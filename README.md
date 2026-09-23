@@ -10,7 +10,7 @@
 
 ## 📖 项目简介
 
-**MelonRind（西瓜皮）** 是一个基于 [LeviLamina](https://github.com/LiteLDev/LeviLamina) 客户端的轻量 HUD 增强模组，致力于在基岩版客户端上完美还原 Java 版 [AppleSkin](https://github.com/squeek502/AppleSkin) 的核心功能。
+**MelonRind（西瓜皮）** 是一个基于 [LeviLamina](https://github.com/LiteLDev/LeviLamina) 客户端的轻量 HUD 增强模组，致力于在基岩版客户端上还原 Java 版 [AppleSkin](https://github.com/squeek502/AppleSkin) 的核心功能。
 
 它能在游戏原版 HUD 界面直观显示玩家隐藏的**饱和度**数值，并在手持食物时动态预览预计恢复的**饱食度、饱和度与生命值**。
 
