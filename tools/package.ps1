@@ -18,6 +18,9 @@ $manifest = $manifest.Replace('${modName}', 'MelonRind').Replace('${modFile}', '
 Set-Content -LiteralPath (Join-Path $source 'manifest.json') -Value $manifest -Encoding utf8
 
 Copy-Item -LiteralPath (Join-Path $workspace 'resource_packs') -Destination $source -Recurse -Force
+if (Test-Path -LiteralPath (Join-Path $workspace 'LICENSE')) {
+    Copy-Item -LiteralPath (Join-Path $workspace 'LICENSE') -Destination (Join-Path $source 'LICENSE') -Force
+}
 if (Test-Path -LiteralPath (Join-Path $workspace 'docs\testing.zh-CN.md')) {
     Copy-Item -LiteralPath (Join-Path $workspace 'docs\testing.zh-CN.md') -Destination (Join-Path $source 'TESTING.md') -Force
 }
