@@ -39,12 +39,6 @@ New-Item -ItemType Directory -Path $staging -Force | Out-Null
 # Copy MelonRind directory
 Copy-Item -LiteralPath $source -Destination (Join-Path $staging 'MelonRind') -Recurse -Force
 
-# Copy tooth.json to root of archive if present
-$toothJsonPath = Join-Path $workspace 'tooth.json'
-if (Test-Path -LiteralPath $toothJsonPath) {
-    Copy-Item -LiteralPath $toothJsonPath -Destination (Join-Path $staging 'tooth.json') -Force
-}
-
 $archive = Join-Path $dist $ArchiveName
 Compress-Archive -Path (Join-Path $staging '*') -DestinationPath $archive -Force
 Remove-Item -LiteralPath $staging -Recurse -Force
