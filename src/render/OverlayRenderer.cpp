@@ -4,7 +4,7 @@
 #include "mc/client/gui/controls/UIControl.h"
 #include "mc/client/gui/screens/UIScene.h"
 #include "mc/client/game/IClientInstance.h"
-#include "mc/client/options/IOptions.h"
+#include "mc/client/options/IOptionRegistry.h"
 #include "mc/client/gui/controls/renderers/HudHungerRenderer.h"
 #include "mc/client/gui/controls/renderers/HudHeartRenderer.h"
 #include "mc/client/renderer/screen/MinecraftUIRenderContext.h"
@@ -13,6 +13,7 @@
 #include "mc/deps/core/string/HashedString.h"
 #include "mc/deps/core/resource/ResourceLocation.h"
 #include "mc/deps/input/RectangleArea.h"
+#include "mc/deps/minecraft_renderer/renderer/BedrockTextureData.h"
 
 #include <algorithm>
 #include <chrono>
@@ -45,9 +46,13 @@ float hudAlpha(UICustomRenderer const& renderer, IClientInstance& client) {
     }
     return alpha;
 }
+glm::vec2 ownerPosition(UIControl& owner) {
+    owner._setCachedPosition();
+    return owner.mCachedPosition.get();
+}
 glm::vec2 position(glm::vec3 const& icon, UIControl& owner, Config const& config) {
     glm::vec2 result{icon.x, icon.y};
-    if (config.positionsAreLocal) result += owner.getPosition();
+    if (config.positionsAreLocal) result += ownerPosition(owner);
     return result;
 }
 bool validPosition(glm::vec2 const& p) {
@@ -60,6 +65,8 @@ void drawRange(MinecraftUIRenderContext& context, mce::TexturePtr const& texture
                std::span<glm::vec3 const> positions, UIControl& owner, Config const& config,
                float before, float after, bool reverseFill, float alpha, mce::Color const& color) {
     if (alpha <= 0 || positions.empty() || positions.size() > 1000) return;
+    auto const& textureData = texture.mClientTexture.get();
+    if (!textureData) return;
     auto slices = iconSlices(before, after, static_cast<int>(positions.size()));
     for (auto const& slice : slices) {
         auto p = position(positions[slice.index], owner, config);
@@ -67,7 +74,7 @@ void drawRange(MinecraftUIRenderContext& context, mce::TexturePtr const& texture
         float left = reverseFill ? 1 - slice.end : slice.start;
         float width = slice.end - slice.start;
         p.x += left * 9;
-        context.drawImage(texture.getClientTexture(), p, {width * 9, 9}, {left, 0}, {width, 1}, false);
+        context.drawImage(textureData->mClientTexture.get(), p, {width * 9, 9}, {left, 0}, {width, 1}, false);
     }
     if (!slices.empty()) context.flushImages(color, alpha, HashedString("ui_textured_and_glcolor"));
 }
@@ -82,9 +89,8 @@ void diagnostics(char const* kind, UICustomRenderer const& renderer, std::span<g
         auto now = Clock::now();
         if (now - last >= std::chrono::seconds(2)) {
             last = now;
-            auto anchor = owner.getPosition();
+            auto anchor = ownerPosition(owner);
             auto first = positions.empty() ? glm::vec3{} : positions[0];
-            auto second = positions.size() < 2 ? glm::vec3{} : positions[1];
             auto topScreen = client.getTopScreenName();
             auto inWorldNoMenu = client.isInWorldAndNotShowingAnyMenuScreens();
             auto isExiting = context.mCurrentScene.isExiting();
@@ -102,7 +108,14 @@ void diagnostics(char const* kind, UICustomRenderer const& renderer, std::span<g
     if (config.diagnosticMarkers && state && pass == config.renderPass && hudAlpha(renderer, client) > 0) {
         for (auto const& icon : positions) {
             auto p = position(icon, owner, config);
-            if (validPosition(p)) context.drawRectangle(RectangleArea(p.x, p.y, p.x + 9, p.y + 9, true), mce::Color(0, 255, 255), .6f, 1);
+            if (validPosition(p)) {
+                RectangleArea area{};
+                area._x0 = p.x;
+                area._x1 = p.x + 9;
+                area._y0 = p.y;
+                area._y1 = p.y + 9;
+                context.drawRectangle(area, mce::Color(0, 255, 255), .6f, 1);
+            }
         }
     }
 }

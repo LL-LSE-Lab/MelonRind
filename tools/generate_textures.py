@@ -1,7 +1,7 @@
 """Generate 9px HUD sprites from code masks, without build-time asset dependencies.
 
 The saturation mask follows the black outline of the target client's vanilla
-textures/ui/hunger_background.png (Minecraft 1.26.10.4): meat upper-left,
+textures/ui/hunger_background.png (Minecraft 1.26.51.1): meat upper-left,
 bone lower-right. Its exact alignment matters because this overlays that icon.
 """
 from pathlib import Path

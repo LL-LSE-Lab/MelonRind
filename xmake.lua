@@ -16,22 +16,39 @@ option_end()
 
 if not has_config("model_tests_only") then
     add_repositories("levimc-repo https://github.com/LiteLDev/xmake-repo.git")
-    add_requires("levilamina 26.10.14", {configs = {target_type = "client"}})
-    add_requires("levibuildscript 0.4.1")
+    add_requireconfs("levilamina.bedrockdata", {override = true, version = "v26.51.1-client.7"})
+    add_requires("levilamina 26.51.6", {configs = {target_type = "client"}})
+    add_requires("levibuildscript 0.6.1")
 
     target("MelonRind")
         set_kind("shared")
-        set_toolchains("msvc")
+        set_toolchains("clang-cl")
         set_symbols("debug")
         add_rules("@levibuildscript/linkrule")
-        add_rules("@levibuildscript/modpacker", {modVersion = "0.1.1"})
+        add_rules("@levibuildscript/modpacker", {modVersion = "0.1.2"})
         add_packages("levilamina")
         add_syslinks("Version")
         add_includedirs("src")
         add_files("src/**.cpp")
         add_defines("NOMINMAX", "UNICODE", "LL_PLAT_C")
         set_exceptions("none")
-        add_cxflags("/EHa", "/utf-8", "/W4", "/permissive-")
+        add_cxflags(
+            "/EHa", "/utf-8", "/W4", "/permissive-",
+            "/w44265", "/w44289", "/w44296", "/w45263", "/w44738", "/w45204"
+        )
+        add_cxflags(
+            "/EHs",
+            "-Wno-microsoft-cast",
+            "-Wno-invalid-offsetof",
+            "-Wno-c++2b-extensions",
+            "-Wno-microsoft-include",
+            "-Wno-overloaded-virtual",
+            "-Wno-ignored-qualifiers",
+            "-Wno-missing-field-initializers",
+            "-Wno-potentially-evaluated-expression",
+            "-Wno-pragma-system-header-outside-header",
+            {tools = {"clang_cl"}}
+        )
     target_end()
 end
 

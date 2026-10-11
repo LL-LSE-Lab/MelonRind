@@ -28,7 +28,7 @@ bool supportedExecutable() {
     VS_FIXEDFILEINFO* info{};
     UINT length{};
     if (!VerQueryValueW(data.data(), L"\\", reinterpret_cast<void**>(&info), &length) || length < sizeof(*info)) return false;
-    return info->dwFileVersionMS == ((1u << 16) | 26u) && info->dwFileVersionLS == ((10u << 16) | 4u);
+    return info->dwFileVersionMS == ((1u << 16) | 26u) && info->dwFileVersionLS == ((51u << 16) | 1u);
 }
 }
 
@@ -44,11 +44,11 @@ public:
         std::filesystem::create_directories(self.getModDir() / "logs");
         self.getLogger().addSink(std::make_shared<ll::io::FileSink>(
             self.getModDir() / "logs" / "MelonRind.log",
-            ll::makePolymorphic<ll::io::PatternFormatter>("[{3:.3%F %T.} {2}] {0}", false), std::ios::app));
+            ll::makePolymorphic<ll::io::PatternFormatter>("[{3:.3%F %T.} {2}] {0}", false)));
         self.getLogger().setFlushLevel(ll::io::LogLevel::Info);
         auto version = ll::getLoaderVersion();
-        if (!ll::isClient() || version.major != 26 || version.minor != 10 || version.patch != 14 || !supportedExecutable()) {
-            self.getLogger().error("Requires LeviLamina client 26.10.14 and Minecraft 1.26.10.4; no hooks installed.");
+        if (!ll::isClient() || version.major != 26 || version.minor != 51 || version.patch != 6 || !supportedExecutable()) {
+            self.getLogger().error("Requires LeviLamina client 26.51.6 and Minecraft 1.26.51.1; no hooks installed.");
             return false;
         }
         try {

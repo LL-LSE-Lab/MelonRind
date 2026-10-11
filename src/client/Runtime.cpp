@@ -3,13 +3,13 @@
 #include "ll/api/io/Logger.h"
 #include "mc/client/game/IClientInstance.h"
 #include "mc/client/player/LocalPlayer.h"
-#include "mc/client/options/IOptions.h"
+#include "mc/client/options/IOptionRegistry.h"
 #include "mc/network/packet/UpdateAttributesPacket.h"
 #include "mc/world/attribute/AttributeInstance.h"
 #include "mc/world/attribute/AttributeInstanceConstRef.h"
 #include "mc/world/attribute/AttributeData.h"
 #include "mc/world/attribute/SharedAttributes.h"
-#include "mc/world/effect/MobEffect.h"
+#include "mc/world/effect/MobEffectIds.h"
 #include "mc/world/item/Item.h"
 #include "mc/world/item/ItemStack.h"
 #include "mc/world/item/components/IFoodItemComponent.h"
@@ -83,13 +83,13 @@ std::optional<Snapshot> Runtime::sample(IClientInstance& client) {
     // A false client rule suppresses prediction; true is still provisional until
     // the remote rule synchronization path has been verified for this version.
     auto const& rules = player->getLevel().getGameRules();
-    auto id = rules.nameToGameRuleIndex("naturalregeneration");
+    auto const id = GameRuleId{static_cast<int>(GameRules::GameRulesIndex::DoNaturalRegeneration)};
     if (!rules.getBool(id, true)) result.regen.naturalRegeneration = RuleState::Disabled;
-    for (auto* effect : {MobEffect::REGENERATION(), MobEffect::POISON(), MobEffect::WITHER(), MobEffect::HUNGER()}) {
-        if (effect && player->getEffect(*effect)) result.regen.suppressed = true;
+    for (auto const effect : {MobEffectIds::Regeneration, MobEffectIds::Poison, MobEffectIds::Wither, MobEffectIds::Hunger}) {
+        if (player->getEffect(static_cast<uint>(effect))) result.regen.suppressed = true;
     }
     auto const& stack = player->getSelectedItem();
-    if (auto* item = stack.getItem()) {
+    if (auto* item = stack.mItem.get()) {
         if (auto* food = item->getFood()) {
             result.itemName = stack.getTypeName();
             bool uncertain = result.itemName == "minecraft:golden_apple"

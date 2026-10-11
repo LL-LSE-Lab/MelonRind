@@ -83,8 +83,10 @@ lip install github.com/LL-LSE-Lab/MelonRind
 
 ### 环境要求
 * Windows x64
-* Visual Studio 2022 C++ 工具链（MSVC）
+* Visual Studio 2022 的 LLVM/clang-cl 工具链
 * [xmake](https://xmake.io/) 3.0 或更高版本
+
+当前构建目标适配 LeviLamina 26.51.6（Minecraft 1.26.51.1）。
 
 ### 构建命令
 
