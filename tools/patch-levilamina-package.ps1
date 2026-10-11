@@ -16,14 +16,19 @@ on_install(function(package)
     -- clang-cl instantiates MinecraftCommands' implicit destructor while
     -- CommandRegistry is only forward declared in this generated header.
     local source = package:sourcedir()
-    local header = path.join(source, "src/mc/server/commands/MinecraftCommands.h")
-    if os.isfile(header) then
-        local text = io.readfile(header)
-        local include = '#include "mc/server/commands/CommandRegistry.h"'
-        if not text:find(include, 1, true) then
-            text = text:gsub('#include "mc/_HeaderOutputPredefine.h"',
-                '#include "mc/_HeaderOutputPredefine.h"\n' .. include, 1)
-            io.writefile(header, text)
+    local headers = {
+        path.join(source, "src/mc/server/commands/MinecraftCommands.h"),
+        path.join(source, "src/mc/server/commands/MinecraftCommandsArguments.h")
+    }
+    for _, header in ipairs(headers) do
+        if os.isfile(header) then
+            local text = io.readfile(header)
+            local include = '#include "mc/server/commands/CommandRegistry.h"'
+            if not text:find(include, 1, true) then
+                text = text:gsub('#include "mc/_HeaderOutputPredefine.h"',
+                    '#include "mc/_HeaderOutputPredefine.h"\n' .. include, 1)
+                io.writefile(header, text)
+            end
         end
     end
 '@
