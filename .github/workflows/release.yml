@@ -40,6 +40,7 @@ jobs:
         shell: pwsh
         run: |
           xmake repo -u
+          ./tools/patch-levilamina-package.ps1
           xmake f -a x64 -m release -p windows --target_type=client -y
           xmake build MelonRind
 
